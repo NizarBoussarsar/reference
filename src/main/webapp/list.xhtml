@@ -1,0 +1,92 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	template="WEB-INF/template/template.xhtml">
+
+	<ui:define name="title">Home Page</ui:define>
+
+	<ui:define name="content">
+		<p:growl id="messages" />
+
+		<h:form id="firstForm">
+			<p:inputText id="search" value="#{myEntityBean.name}"></p:inputText>
+			<p:commandButton ajax="false" value="Search by name"
+				action="#{myEntityBean.find()}">
+				<f:ajax execute="search" render="myEntityTable messages"></f:ajax>
+			</p:commandButton>
+			<p:commandButton ajax="false" value="Clear search"
+				action="#{myEntityBean.clearSearch()}">
+				<f:ajax execute="search" render="myEntityTable search"></f:ajax>
+			</p:commandButton>
+		</h:form>
+
+		<p:dataTable value="#{myEntityBean.myEntities}" var="myEntity"
+			id="myEntityTable">
+			<p:column headerText="name"> #{myEntity.name} </p:column>
+			<p:column headerText="url">
+				<a href="#{myEntity.url}" target="_blank"> #{myEntity.url} </a>
+			</p:column>
+			<p:column headerText="operations">
+				<h:form>
+					<p:commandButton value="edit"
+						action="#{myEntityBean.setMyEntity(myEntity)}"
+						update=":myEntityForm, :messages" resetValues="true"
+						oncomplete="PF('myEntityDialog').show()" />
+					<p:commandButton value="remove"
+						action="#{myEntityBean.remove(myEntity)}"
+						update=":myEntityTable, :messages">
+						<p:confirm header="Confirmation" message="Are you sure?"
+							icon="ui-icon-alert" />
+					</p:commandButton>
+				</h:form>
+			</p:column>
+		</p:dataTable>
+
+		<br />
+		<h:form>
+			<p:commandButton value="add myEntity"
+				action="#{myEntityBean.clear()}" update=":myEntityForm"
+				oncomplete="PF('myEntityDialog').show()" resetValues="true" />
+		</h:form>
+
+		<p:dialog widgetVar="myEntityDialog" closeOnEscape="true" modal="true"
+			header="myEntity">
+			<h:form id="myEntityForm">
+				<p:messages />
+				<p:focus />
+				<p:panelGrid columns="2">
+		name:
+		<p:inputText value="#{myEntityBean.myEntity.name}" />
+		
+		url:
+		<p:inputText value="#{myEntityBean.myEntity.url}" />
+				</p:panelGrid>
+				<p:commandButton value="save" action="#{myEntityBean.save()}"
+					update="myEntityForm, :myEntityTable, :messages"
+					oncomplete="handleDialogSubmit(args, 'myEntityDialog')" />
+			</h:form>
+		</p:dialog>
+
+		<h:form>
+			<p:confirmDialog global="true" closeOnEscape="true">
+				<p:commandButton value="Yes" type="button"
+					styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+				<p:commandButton value="No" type="button"
+					styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+			</p:confirmDialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="js_part">
+		<script type="text/javascript">
+			function handleDialogSubmit(args, dialogName) {
+				if (!args.validationFailed) {
+					PF(dialogName).hide();
+				}
+			}
+		</script>
+	</ui:define>
+
+</ui:composition>
